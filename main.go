@@ -56,6 +56,20 @@ func getAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
+func getAlbumById(c *gin.Context) {
+	id := c.Param("id")
+	db, err := connectToDb()
+	row := db.QueryRow("SELECT * FROM album WHERE id = ?", id)
+
+	var album album
+	err = row.Scan(&album.ID, &album.Title, &album.Artist, &album.Price)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err)
+	}
+
+	c.IndentedJSON(http.StatusOK, album)
+}
+
 func postAlbums(c *gin.Context) {
 	var newAlbum album
 
@@ -84,6 +98,7 @@ func postAlbums(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	router.GET("/albums", getAlbums)
+	router.GET("/albums/:id", getAlbumById)
 	router.POST("/albums", postAlbums)
 	router.Run("localhost:8080")
 }
